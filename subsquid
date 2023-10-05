@@ -1,0 +1,156 @@
+#!/bin/bash
+
+# Убедитесь, что у вас есть права на исполнение скрипта fetch_or_ask.sh или
+# скопируйте его содержимое в этот файл перед определением функции handle_error
+source fetch_or_ask
+source dependencies.sh
+env_file="/root/.env"
+FORCE_CONTINUE="false"
+if [[ "$1" == "-y" ]]; then
+    FORCE_CONTINUE="true"
+fi
+
+# Проверяем существование переменной $server_id
+server_id=$(grep -oP '(?<=server_id=).*' "$env_file" || true)
+
+# Если переменной нет, спрашиваем у пользователя
+if [[ -z "$server_id" ]]; then
+    echo "Enter server ID:"
+    read -r server_id
+
+    # Записываем в файл .env
+    echo "server_id=$server_id" >> "$env_file"
+fi
+ echo "$server_id"
+# Определите зависимости в массиве
+dependencies=("docker-ce" "docker-ce-cli" "containerd.io" "docker-buildx-plugin" "docker-compose-plugin" "npm")
+
+# Вызов функции с передачей зависимостей как аргументов
+check_dependencies "${dependencies[@]}"
+handle_error() {
+    local err=$?
+    echo "Ошибка в строке $1: код ошибки $err"
+    exit $err
+}
+
+trap 'handle_error $LINENO' ERR
+
+script_path="$0"
+script_name=$(basename "$script_path")
+PNAME="${script_name%.*}"
+
+
+readonly WALLET_PROVIDER=metamask
+readonly NETWORK=goerly
+
+#WALLET=$(fetch_or_ask $PNAME $WALLET_PROVIDER EVM WALLET)
+#WALLET_SEED=$(fetch_or_ask $PNAME $WALLET_PROVIDER EVM WALLET_SEED)
+#DISCORD=$(fetch_or_ask DISCORD ID)
+
+pPath=$(pwd)/data/$PNAME
+mkdir $pPath -p
+path=/root/node/
+projectPath=$path$PNAME
+mkdir $projectPath -p
+cd $projectPath
+
+npm install --global @subsquid/cli@latest
+ls /home/
+if [[ -f .env ]]; then
+  export $(grep -v '^#' .env | xargs)
+fi
+
+# Проверка, установлен ли LOGIN
+if [[ -z "$LOGIN" ]]; then
+    echo "Enter login:"
+    read LOGIN
+    echo "LOGIN=$LOGIN" > .env
+fi
+
+handle_error() {
+    echo "An error occurred!"
+    if [[ "$FORCE_CONTINUE" == "true" ]]; then
+        echo "Force continue is enabled. Skipping confirmation and continuing..."
+        return 0
+    else
+        while true; do
+            read -p "Do you wish to continue? (y/n) " yn
+            case $yn in
+                [Yy]* ) break;;
+                [Nn]* ) exit 1;;
+                * ) echo "Please answer yes or no.";;
+            esac
+        done
+    fi
+}
+
+process_types=("single" "double" "triple" "quad")
+
+# Перебор типов процессов и выполнение команды
+for proc_type in "${process_types[@]}"; do
+    folder="my-${proc_type}-proc-squid"
+    if [[ -d "$folder" ]]; then
+        echo "Stopping sqd in $folder..."
+        (cd "$folder" && sqd down)
+        docker-compose down
+    else
+        echo "Folder $folder does not exist, skipping..."
+    fi
+done
+
+
+execute_squid_init() {
+    # В зависимости от переданного параметра меняем название и ключ
+    local instance_type="$1"
+    local proc_key="${instance_type}Proc.key"
+    local status_file="./data/$PNAME/status"
+    local status_file=$pPath/status
+
+ if grep -q "$server_id $instance_type" "$status_file"; then
+        echo "Skipping $instance_type initialization since it's already done for server $server_id."
+        return 0  # Пропуск выполнения функции и переход к следующему шагу
+    fi
+
+netstat -tulpn | grep 4350 | awk '{print $7}' | cut -d"/" -f1 | xargs kill -9
+
+ echo "Initializing ${instance_type}-proc squid..."
+
+    # Инициализация и обработка возможных ошибок
+    sqd init "my-${instance_type}-proc-squid" -t "https://github.com/subsquid-quests/${instance_type}-chain-squid" || handle_error
+
+    # Переходим в созданную директорию
+    cd "my-${instance_type}-proc-squid" || handle_error
+
+    # Операции с ключами и запуск процессов
+    mv "/home/$LOGIN/Downloads/$proc_key" "$(pwd)/query-gateway/keys" || handle_error
+
+    sqd up || handle_error
+    npm ci || handle_error
+    sqd build || handle_error
+    sqd migration:apply || handle_error
+        echo  $instance_type
+    sqd run . &
+    LOG_PID=$!
+    read -n 1 -r -p "Press any key to stop logs"
+    kill $LOG_PID
+    echo "$server_id"
+    echo "$server_id $instance_type" >> $pPath/status
+ 
+    # Возвращаемся обратно, чтобы следующие операции проходили корректно
+    sqd down
+    netstat -tulpn | grep 4350 | awk '{print $7}' | cut -d"/" -f1 | xargs kill -9
+
+    cd ..
+}
+
+trap "echo -e '\nInterrupt received! Stopping...'; exit 1" INT
+
+execute_squid_init "single" || handle_error
+execute_squid_init "double" || handle_error
+execute_squid_init "triple" || handle_error
+execute_squid_init "quad" || handle_error
+
+echo "All processes have been started. Press any key to stop them..."
+read -r -n 1
+
+echo "Stopping all processes..."
