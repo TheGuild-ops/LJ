@@ -61,15 +61,15 @@ cd $projectPath
 
 npm install --global @subsquid/cli@latest
 ls /home/
-if [[ -f .env ]]; then
-    export $(grep -v '^#' .env | xargs)
+if [[ -f /root/.env ]]; then
+    export $(grep -v '^#' /root/.env | xargs)
 fi
 
 # Проверка, установлен ли LOGIN
 if [[ -z "$LOGIN" ]]; then
     echo "Enter login:"
     read LOGIN
-    echo "LOGIN=$LOGIN" > .env
+    echo "LOGIN=$LOGIN" > /root/.env
 fi
 
 handle_error() {
