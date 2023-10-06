@@ -102,8 +102,7 @@ execute_squid_init() {
     # В зависимости от переданного параметра меняем название и ключ
     local instance_type="$1"
     local proc_key="${instance_type}Proc.key"
-    local status_file="./data/$PNAME/status"
-    local status_file=$pPath/status
+    local status_file="./data/$PNAME/status/$server_id"
 
  if grep -q "$server_id $instance_type" "$status_file"; then
         echo "Skipping $instance_type initialization since it's already done for server $server_id."
@@ -133,7 +132,7 @@ netstat -tulpn | grep 4350 | awk '{print $7}' | cut -d"/" -f1 | xargs kill -9
     read -n 1 -r -p "Press any key to stop logs"
     kill $LOG_PID
     echo "$server_id"
-    echo "$server_id $instance_type" >> $pPath/status
+    echo "$server_id $instance_type" >> $pPath/status/$server_id
  
     # Возвращаемся обратно, чтобы следующие операции проходили корректно
     sqd down
