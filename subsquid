@@ -7,6 +7,11 @@
 source <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/main/dependencies.sh)
 source <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/main/fetch_or_ask)
 
+readonly PNAME=subsquid
+readonly WALLET_PROVIDER=metamask
+readonly NETWORK=goerly
+
+
 env_file="/root/.env"
 FORCE_CONTINUE="false"
 if [[ "$1" == "-y" ]]; then
@@ -20,11 +25,10 @@ server_id=$(grep -oP '(?<=server_id=).*' "$env_file" || true)
 if [[ -z "$server_id" ]]; then
     echo "Enter server ID:"
     read -r server_id
-
-    # Записываем в файл .env
     echo "server_id=$server_id" >> "$env_file"
 fi
- echo "$server_id"
+
+echo "$server_id"
 # Определите зависимости в массиве
 dependencies=("docker-ce" "docker-ce-cli" "containerd.io" "docker-buildx-plugin" "docker-compose-plugin" "npm")
 
@@ -38,9 +42,6 @@ handle_error() {
 
 trap 'handle_error $LINENO' ERR
 
-readonly PNAME=subsquid
-readonly WALLET_PROVIDER=metamask
-readonly NETWORK=goerly
 
 #WALLET=$(fetch_or_ask $PNAME $WALLET_PROVIDER EVM WALLET)
 #WALLET_SEED=$(fetch_or_ask $PNAME $WALLET_PROVIDER EVM WALLET_SEED)
@@ -137,7 +138,6 @@ netstat -tulpn | grep 4350 | awk '{print $7}' | cut -d"/" -f1 | xargs kill -9
     # Возвращаемся обратно, чтобы следующие операции проходили корректно
     sqd down
     netstat -tulpn | grep 4350 | awk '{print $7}' | cut -d"/" -f1 | xargs kill -9
-
     cd ..
 }
 
