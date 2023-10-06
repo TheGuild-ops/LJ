@@ -24,7 +24,7 @@ fi
 server_id=$(grep -oP '(?<=server_id=).*' "$env_file" || true)
 readonly status_folder="$(pwd)/data/$PNAME/status/"
 mkdir -p $status_folder
-readonly status_file="$status_folder/$server_id"
+readonly status_file="$status_folder$server_id"
 
 # Если переменной нет, спрашиваем у пользователя
 if [[ -z "$server_id" ]]; then
@@ -136,7 +136,7 @@ execute_squid_init() {
     read -n 1 -r -p "Press any key to stop logs"
     kill $LOG_PID
     echo "$server_id"
-    echo "$server_id $instance_type" >> $pPath/status/$server_id
+    echo "$server_id $instance_type" >> $status_file
     
     # Возвращаемся обратно, чтобы следующие операции проходили корректно
     sqd down
