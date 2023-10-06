@@ -18,8 +18,13 @@ if [[ "$1" == "-y" ]]; then
     FORCE_CONTINUE="true"
 fi
 
+
+
 # Проверяем существование переменной $server_id
 server_id=$(grep -oP '(?<=server_id=).*' "$env_file" || true)
+readonly status_folder="$(pwd)/data/$PNAME/status/"
+mkdir -p $status_folder
+readonly status_file="$status_folder/$server_id"
 
 # Если переменной нет, спрашиваем у пользователя
 if [[ -z "$server_id" ]]; then
@@ -57,7 +62,7 @@ cd $projectPath
 npm install --global @subsquid/cli@latest
 ls /home/
 if [[ -f .env ]]; then
-  export $(grep -v '^#' .env | xargs)
+    export $(grep -v '^#' .env | xargs)
 fi
 
 # Проверка, установлен ли LOGIN
@@ -103,42 +108,41 @@ execute_squid_init() {
     # В зависимости от переданного параметра меняем название и ключ
     local instance_type="$1"
     local proc_key="${instance_type}Proc.key"
-    local status_file="./data/$PNAME/status/$server_id"
-
- if grep -q "$server_id $instance_type" "$status_file"; then
+    if grep -q "$server_id $instance_type" "$status_file"; then
         echo "Skipping $instance_type initialization since it's already done for server $server_id."
         return 0  # Пропуск выполнения функции и переход к следующему шагу
     fi
-
-netstat -tulpn | grep 4350 | awk '{print $7}' | cut -d"/" -f1 | xargs kill -9
-
- echo "Initializing ${instance_type}-proc squid..."
-
+    
+    netstat -tulpn | grep 4350 | awk '{print $7}' | cut -d"/" -f1 | xargs kill -9
+    
+    echo "Initializing ${instance_type}-proc squid..."
+    
     # Инициализация и обработка возможных ошибок
     sqd init "my-${instance_type}-proc-squid" -t "https://github.com/subsquid-quests/${instance_type}-chain-squid" || handle_error
-
+    
     # Переходим в созданную директорию
     cd "my-${instance_type}-proc-squid" || handle_error
-
+    
     # Операции с ключами и запуск процессов
     mv "/home/$LOGIN/Downloads/$proc_key" "$(pwd)/query-gateway/keys" || handle_error
-
+    
     sqd up || handle_error
     npm ci || handle_error
     sqd build || handle_error
     sqd migration:apply || handle_error
-        echo  $instance_type
+    echo  $instance_type
     sqd run . &
     LOG_PID=$!
     read -n 1 -r -p "Press any key to stop logs"
     kill $LOG_PID
     echo "$server_id"
     echo "$server_id $instance_type" >> $pPath/status/$server_id
- 
+    
     # Возвращаемся обратно, чтобы следующие операции проходили корректно
     sqd down
     netstat -tulpn | grep 4350 | awk '{print $7}' | cut -d"/" -f1 | xargs kill -9
     cd ..
+    yandex-disk sync || handle_error
 }
 
 trap "echo -e '\nInterrupt received! Stopping...'; exit 1" INT
@@ -152,3 +156,4 @@ echo "All processes have been started. Press any key to stop them..."
 read -r -n 1
 
 echo "Stopping all processes..."
+
