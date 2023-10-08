@@ -124,7 +124,7 @@ execute_squid_init() {
     cd "my-${instance_type}-proc-squid" || handle_error
     
     # Операции с ключами и запуск процессов
-    mv "/home/$LOGIN/Downloads/$proc_key" "$(pwd)/query-gateway/keys" || handle_error
+    cp "/home/$LOGIN/Downloads/$proc_key" "$(pwd)/query-gateway/keys" || handle_error
     
     sqd up || handle_error
     npm ci || handle_error
