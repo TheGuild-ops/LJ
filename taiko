@@ -1,0 +1,64 @@
+#!/bin/bash
+
+# Импорт .profile файла
+source <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/main/dependencies.sh)
+source <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/main/fetch_or_ask)
+
+readonly PNAME=taiko
+readonly WALLET_PROVIDER=metamask
+readonly NETWORK=sepolia
+
+target_directory="/root/node/simple-taiko-node"
+git_repo_url="https://github.com/taikoxyz/simple-taiko-node.git"
+
+readonly status_folder="$(pwd)/data/$PNAME/status/"
+mkdir -p $status_folder
+readonly status_file="$status_folder$server_id"
+
+echo "$server_id"
+
+docker_compose_file="$target_directory/docker-compose.yml"
+
+WALLET=$(fetch_or_ask $PNAME $WALLET_PROVIDER EVM WALLET)
+WALLET_SEED=$(fetch_or_ask $PNAME $WALLET_PROVIDER EVM WALLET_SEED)
+ENDPOINT=$(fetch_or_ask $NETWORK $WALLET_PROVIDER EVM ENDPOINT)
+
+mkdir "/root/node" -p 
+cd "/root/node" ## exit 1
+
+if [ -d "$target_directory/.git" ]; then
+    git pull
+else
+    git clone "$git_repo_url" "$target_directory"
+fi
+
+cd simple-taiko-node
+
+# Вывод текущего состояния Docker
+echo "Current Docker state:"
+docker ps
+
+# Вывод переменных перед их импортированием в .env
+ENDPOINT_HTTPS=http://${ENDPOINT}:8545/
+ENDPOINT_WS=ws://${ENDPOINT}:8546/
+
+# Замена переменных в .env файле
+sed -i "s#L1_ENDPOINT_HTTP=.*#L1_ENDPOINT_HTTP=$ENDPOINT_HTTPS#" .env
+sed -i "s#L1_ENDPOINT_WS=.*#L1_ENDPOINT_WS=$ENDPOINT_WS#" .env
+sed -i "s#L1_PROPOSER_PRIVATE_KEY=.*#L1_PROPOSER_PRIVATE_KEY=$WALLET_SEED#" .env
+sed -i "s#L1_PROVER_PRIVATE_KEY=.*#L1_PROPOSER_PRIVATE_KEY=$WALLET_SEED#" .env
+sed -i "s#L2_SUGGESTED_FEE_RECIPIENT=.*#L2_SUGGESTED_FEE_RECIPIENT=$WALLET#" .env
+sed -i 's#DISABLE_P2P_SYNC=.*#DISABLE_P2P_SYNC=true#' .env
+sed -i 's#ENABLE_PROPOSER=.*#ENABLE_PROPOSER=true#' .env
+
+# Замена переменной PROVER_ENDPOINTS в .env файле
+PROVER_ENDPOINTS="http://taiko-a5-prover-simple.zkpool.io,https://taiko-a5-prover.zkpool.io,http://pool-1.taikopool.xyz,http://taiko.web3cript.xyz:9876,http://ttko.web3cript.xyz:9876,http://purethereal.xyz:9876,http://karmanodes.xyz,http://taiko.crypticnode.xyz:9876,http://158.220.89.198:9876,http://62.183.54.219:9876,http://45.144.28.60:9876,http://185.173.38.221:9876,http://45.142.214.132:9876,http://65.21.14.11:9876"
+sed -i "s#PROVER_ENDPOINTS=.*#PROVER_ENDPOINTS=\"$PROVER_ENDPOINTS\"#" .env
+
+# Дополнительные строки для .env файла
+echo L1_PROVER_PRIVATE_KEY=$WALLET_SEED >> .env
+
+# Получение и запуск образов Docker
+read
+docker-compose -f "$docker_compose_file" pull
+docker-compose -f "$docker_compose_file" up -d
