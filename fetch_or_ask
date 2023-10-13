@@ -13,8 +13,14 @@ fetch_or_ask() {
         touch "$env_file"
     fi
 
-    # Считывание server_id из файла
-    server_id=$(grep -oP '(?<=server_id=).*' "$env_file")
+    # Считывание server_id из файла безопасным способом
+    server_id=$(grep "^server_id=" "$env_file" | awk -F= '{print $2}' | xargs)
+
+    # Проверка server_id на длину и специальные символы
+    if [[ ${#server_id} -gt 50 || "$server_id" =~ [^a-zA-Z0-9_] ]]; then
+        echo "Invalid server_id."
+        exit 1
+    fi
 
     # Если server_id отсутствует, запрашиваем его у пользователя
     while [[ -z $server_id ]]; do
@@ -26,6 +32,12 @@ fetch_or_ask() {
         echo "server_id=$server_id" >> "$env_file"
     fi
 
+    # Если функция вызвана без параметров, возвращаем server_id
+    if [ "$#" -eq 0 ]; then
+        echo "$server_id"
+        return
+    fi
+
     # Формируем путь к каталогу и имя файла
     local directory="./data"
     local filename=""
@@ -35,11 +47,17 @@ fetch_or_ask() {
         filename+="$param"
     done
 
+    # Защита от пустого filename
+    if [[ -z $filename ]]; then
+        echo "Filename is empty."
+        exit 1
+    fi
+
     mkdir -p "$directory"  # создаем директорию, если она не существует
 
-    # Проверяем, есть ли уже значение в файле
+    # Проверяем, есть ли уже значение в файле безопасным способом
     if [[ -f "$directory/$filename" ]]; then
-        existing_value=$(grep "$server_id" "$directory/$filename" | cut -d' ' -f2)
+        existing_value=$(grep "^$server_id" "$directory/$filename" | awk '{print $2}' | xargs)
     fi
 
     if [[ -n $existing_value ]]; then
@@ -47,7 +65,11 @@ fetch_or_ask() {
     else
         while : ; do  # бесконечный цикл
             read -p "Enter value for $filename (or press Enter to skip): " value
-            if [[ -z $value ]]; then
+            # Проверка на длину и специальные символы в value
+            if [[ ${#value} -gt 100 || "$value" =~ [^a-zA-Z0-9_] ]]; then
+                echo "Invalid input."
+                continue  # возвращает в начало цикла
+            elif [[ -z $value ]]; then
                 echo "Skipping the input for $filename."
                 return  # прерывает выполнение функции
             else

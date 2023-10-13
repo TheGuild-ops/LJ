@@ -13,7 +13,8 @@ FORCE_CONTINUE="false"
 if [[ "$1" == "-y" ]]; then
     FORCE_CONTINUE="true"
 fi
-
+server=fetch_or_ask()
+echo $server 
 target_directory="/root/node/simple-taiko-node"
 git_repo_url="https://github.com/taikoxyz/simple-taiko-node.git"
 server_id=$(grep -oP '(?<=server_id=).*' "$env_file" || true)
