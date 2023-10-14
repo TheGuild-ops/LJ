@@ -2,8 +2,8 @@
 
 source <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/main/tool/dependencies.sh)
 source <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/main/tool/fetch_or_ask)
-bash <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/main/tool/install_rust)
-bash <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/main/tool/subkeyGenerator)
+bash <(curl -sS   https://raw.githubusercontent.com/TheGuild-ops/LJ/main/tool/install_rust)
+bash <(curl -sS   https://raw.githubusercontent.com/TheGuild-ops/LJ/main/tool/subkeyGenerator)
 
 readonly PNAME=t3rn
 readonly WALLET_PROVIDER=polkadotjs
@@ -30,33 +30,29 @@ check_dependencies "${dependencies[@]}"
 
 
 latest_release=$(curl -s https://api.github.com/repos/t3rn/t3rn/releases/latest | jq -r '.tag_name')
+echo $latest_release
 file_url="https://github.com/t3rn/t3rn/releases/download/${latest_release}/t0rn-collator-${latest_release}-x86_64-unknown-linux-gnu.gz"
-curl -L -o t0rn-collator.gz $file_url
+wget $file_url -O t0rn-collator.gz
 gunzip -c t0rn-collator.gz > circuit-collator
+mkdir ${target_directory}/specs -p
+wget   https://raw.githubusercontent.com/t3rn/t3rn/v1.2.0-rc.5/specs/rococo.raw.json -O ${target_directory}/specs/rococo.raw.json 
 
-
-curl -sSfL \
-  -o ${target_directory}specs/rococo.raw.json \
-  https://raw.githubusercontent.com/t3rn/t3rn/v1.2.0-rc.5/specs/rococo.raw.json
-
-curl -sSfL \
-  -o ${target_directory}/specs/t0rn.raw.json \
-  https://raw.githubusercontent.com/t3rn/t3rn/v1.2.0-rc.5/specs/t0rn.raw.json
+wget  https://raw.githubusercontent.com/t3rn/t3rn/v1.2.0-rc.5/specs/t0rn.raw.json -O ${target_directory}/specs/t0rn.raw.json
 
 #t0rn_boot_node=/ip4/159.69.77.34/tcp/33333/p2p/12D3KooWEXwTktuERRvV3NCqmBuco7bYBaU7zRnwQCp4GEDYpS1v
 t0rn_boot_node=/dns/bootnode.t0rn.io/tcp/33333/p2p/12D3KooWEepV69XCJB4Zi193cZcm5W22ZR62DEP84iLFTUKVPtwp
 rococo_boot_node=/ip4/34.90.151.124/tcp/30333/p2p/12D3KooWF7BUbG5ErMZ47ZdarRwtpZamgcZqxwpnFzkhjc1spHnP
-
+echo $NODENAME
 echo "[Unit]
 Description=Collator
 After=network-online.target
 [Service]
 User=$USER
-ExecStart=${target_directory}circuit-collator --collator --name $NODENAME --base-path ${target_directory}data --chain ${target_directory}specs/t0rn.raw.json --bootnodes "$t0rn_boot_node" --port 33333 --rpc-port 8833 --prometheus-port 7001 --telemetry-url 'wss://telemetry.polkadot.io/submit 1' --ws-port 9933 --execution Wasm --pruning=archive --rpc-methods=unsafe -- --chain ${target_directory}rococo.raw.json --bootnodes "$rococo_boot_node" --port 10001 --rpc-port 8001 --ws-port 9001 --execution Wasm
+ExecStart=${target_directory}/circuit-collator --collator --name $NODENAME --base-path ${target_directory}/data --chain ${target_directory}/specs/t0rn.raw.json --bootnodes "$t0rn_boot_node" --port 33333 --rpc-port 8833 --prometheus-port 7001 --telemetry-url 'wss://telemetry.polkadot.io/submit 1' --ws-port 9933 --execution Wasm --pruning=archive --rpc-methods=unsafe -- --chain ${target_directory}/rococo.raw.json --bootnodes "$rococo_boot_node" --port 10001 --rpc-port 8001 --ws-port 9001 --execution Wasm
 Restart=always
 RestartSec=10
 LimitNOFILE=10000
 [Install]
 WantedBy=multi-user.target
-" > $HOME/t0rn.service
-sudo mv $HOME/t0rn.service /etc/systemd/system/
+" > $HOME/t3rn.service
+sudo mv $HOME/t3rn.service /etc/systemd/system/

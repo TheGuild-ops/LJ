@@ -1,12 +1,13 @@
 #!/bin/bash
-
+source $HOME/.cargo/env
+source /root/.profile 
 # Check if Rust is already installed
 if command -v rustc &> /dev/null; then
     echo "Rust is already installed. Skipping installation."
 else
     # Install Rust using rustup
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-    source $HOME/.cargo/env
+    echo "Rust installation completed."
 fi
 
 # Set the default Rust version to stable
@@ -14,7 +15,6 @@ rustup default stable
 
 # Update Rust
 rustup update
-rustup update nightly
 
 # Add the target platform (wasm32-unknown-unknown) to the nightly Rust toolchain
 rustup target add wasm32-unknown-unknown --toolchain nightly
@@ -25,4 +25,4 @@ rustup show
 # Show information about the nightly Rust version
 rustup +nightly show
 
-echo "Rust installation and configuration completed."
+echo "Rust configuration completed."
