@@ -1,6 +1,5 @@
 #!/bin/bash
 
-# Импорт .profile файла
 source <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/main/tool/dependencies.sh)
 source <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/main/tool/fetch_or_ask)
 bash <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/main/tool/install_rust)
@@ -18,7 +17,7 @@ mkdir -p $status_folder
 WALLET=$(fetch_or_ask $WALLET_PROVIDER WALLET)
 WALLET_SEED=$(fetch_or_ask $WALLET_PROVIDER WALLET_SEED)
 ENDPOINT=$(fetch_or_ask $NETWORK $WALLET_PROVIDER ENDPOINT)
-NODENAME=$(fetch_or_ask NODENAME) goga
+NODENAME=$(fetch_or_ask NODENAME)
 
 echo "$server_id"
 readonly status_file="$status_folder$server_id"
@@ -27,23 +26,8 @@ mkdir "${target_directory}" -p
 cd "${target_directory}" ## exit 1
 
 dependencies=("build-essential" "git" "clang" "curl" "libssl-dev" "llvm" "libudev-dev" "git" "make" "protobuf-compiler" "unzip")
+check_dependencies "${dependencies[@]}"
 
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
-source $HOME/.cargo/env
-rustup default stable
-rustup update
-rustup update nightly
-rustup target add wasm32-unknown-unknown --toolchain nightly
-rustup show
-rustup +nightly show
-
-git clone https://github.com/paritytech/substrate.git
-cd substrate
-cargo +nightly build --package subkey --release
-sudo mv target/release/subkey /usr/local/bin/ || exit
-subkey generate >$HOME/key.txt
-echo "-----------------------------------------------------------------------------------------------"
-cat $HOME/key.txt
 
 latest_release=$(curl -s https://api.github.com/repos/t3rn/t3rn/releases/latest | jq -r '.tag_name')
 file_url="https://github.com/t3rn/t3rn/releases/download/${latest_release}/t0rn-collator-${latest_release}-x86_64-unknown-linux-gnu.gz"
