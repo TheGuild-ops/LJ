@@ -4,8 +4,8 @@
 if ! command -v subkey &> /dev/null; then
     echo "subkey is not installed. Installing..."
     cargo +nightly install --force subkey
-    git clone https://github.com/paritytech/substrate.git
     cd 
+    git clone https://github.com/paritytech/substrate.git
     cd substrate
     cargo +nightly build --package subkey --release
     sudo mv target/release/subkey /usr/local/bin/ || exit
