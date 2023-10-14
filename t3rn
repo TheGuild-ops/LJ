@@ -1,10 +1,10 @@
 #!/bin/bash
 
 # Импорт .profile файла
-source <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/tool/main/dependencies.sh)
-source <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/tool/main/fetch_or_ask)
-bash <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/tool/main/install_rust)
-bash <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/tool/main/subkeyGenerator)
+source <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/main/tool/dependencies.sh)
+source <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/main/tool/fetch_or_ask)
+bash <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/main/tool/install_rust)
+bash <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/main/tool/subkeyGenerator)
 
 readonly PNAME=t3rn
 readonly WALLET_PROVIDER=polkadotjs
