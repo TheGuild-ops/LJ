@@ -51,7 +51,6 @@ Description=Collator
 After=network-online.target
 [Service]
 User=$USER
-ExecStart=${target_directory}/circuit-collator --collator --name $NODENAME --base-path ${target_directory}/data --chain ${target_directory}/specs/t0rn.raw.json --bootnodes "$t0rn_boot_node" --port 33333 --rpc-port 8833 --prometheus-port 7001 --telemetry-url 'wss://telemetry.polkadot.io/submit 1' --ws-port 9933 --execution Wasm --pruning=archive --rpc-methods=unsafe -- --chain ${target_directory}/rococo.raw.json --bootnodes "$rococo_boot_node" --port 10001 --rpc-port 8001 --ws-port 9001 --execution Wasm
 Restart=always
 RestartSec=10
 LimitNOFILE=10000
