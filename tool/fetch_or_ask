@@ -63,14 +63,16 @@ fetch_or_ask() {
     if [[ -n $existing_value ]]; then
         value=$existing_value
     else
-while : ; do  # бесконечный цикл
+while : ; do
     read -p "Enter value for $filename (or press Enter to skip): " value
-    if [[ -z $value ]]; then
-        echo "Input is empty. Value will be set to an empty string."
+    if [[ "$value" == "" ]]; then
+        value=""
+        break
     else
-        break  # выходит из цикла, если значение не пусто
+        break
     fi
 done
+
 
         # Обновляем значение в файле
         echo "$server_id $value" >> "$directory/$filename"
