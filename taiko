@@ -19,11 +19,11 @@ echo "$server_id"
 
 docker_compose_file="$target_directory/docker-compose.yml"
 
-WALLET=$(fetch_or_ask $PNAME $WALLET_PROVIDER EVM WALLET)
-WALLET_SEED=$(fetch_or_ask $PNAME $WALLET_PROVIDER EVM WALLET_SEED)
-ENDPOINT=$(fetch_or_ask $NETWORK $WALLET_PROVIDER EVM ENDPOINT)
+WALLET=$(fetch_or_ask $WALLET_PROVIDER WALLET)
+WALLET_SEED=$(fetch_or_ask $WALLET_PROVIDER WALLET_SEED)
+ENDPOINT=$(fetch_or_ask $NETWORK $WALLET_PROVIDER ENDPOINT)
 
-mkdir "/root/node" -p 
+mkdir "/root/node/" -p 
 cd "/root/node" ## exit 1
 
 if [ -d "$target_directory/.git" ]; then
@@ -59,6 +59,6 @@ sed -i "s#PROVER_ENDPOINTS=.*#PROVER_ENDPOINTS=\"$PROVER_ENDPOINTS\"#" .env
 echo L1_PROVER_PRIVATE_KEY=$WALLET_SEED >> .env
 
 # Получение и запуск образов Docker
-read
+docker-compose -f "$docker_compose_file" down
 docker-compose -f "$docker_compose_file" pull
 docker-compose -f "$docker_compose_file" up -d
