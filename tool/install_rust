@@ -10,7 +10,7 @@ else
     curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
     echo "Rust installation completed."
 fi
-
+source /root/.profile 
 # Set the default Rust version to stable
 rustup default stable
 
