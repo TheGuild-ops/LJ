@@ -21,6 +21,8 @@ NODENAME=$(fetch_or_ask NODENAME)
 
 echo "$server_id"
 readonly status_file="$status_folder$server_id"
+echo $WALLET
+echo $WALLET_SEED
 
 mkdir "${target_directory}" -p 
 cd "${target_directory}" ## exit 1
