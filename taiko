@@ -1,8 +1,8 @@
 #!/bin/bash
 
 # Импорт .profile файла
-source <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/main/dependencies.sh)
-source <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/main/fetch_or_ask)
+source <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/tool/main/dependencies.sh)
+source <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/tool/main/fetch_or_ask)
 
 readonly PNAME=taiko
 readonly WALLET_PROVIDER=metamask

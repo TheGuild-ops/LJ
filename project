@@ -6,6 +6,7 @@ project_output() {
     projects=(
         "https://raw.githubusercontent.com/TheGuild-ops/LJ/main/subsquid"
         "https://raw.githubusercontent.com/TheGuild-ops/LJ/main/taiko"
+        "https://raw.githubusercontent.com/TheGuild-ops/LJ/main/t3rn"
         # Добавьте больше проектов по мере необходимости
     )
 
