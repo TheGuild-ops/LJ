@@ -1,8 +1,9 @@
 #!/bin/bash
+
 source $HOME/.cargo/env
 source /root/.profile 
 # Check if Rust is already installed
-if command -v rustc &> /dev/null; then
+if command -v rustup &> /dev/null; then
     echo "Rust is already installed. Skipping installation."
 else
     # Install Rust using rustup
