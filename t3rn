@@ -23,7 +23,7 @@ echo "$server_id"
 readonly status_file="$status_folder$server_id"
 echo $WALLET
 echo $WALLET_SEED
-
+read
 mkdir "${target_directory}" -p 
 cd "${target_directory}" ## exit 1
 
