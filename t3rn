@@ -21,7 +21,8 @@ mkdir -p $status_folder
 WALLET=$(fetch_or_ask $WALLET_PROVIDER WALLET)
 WALLET_SEED=$(fetch_or_ask $WALLET_PROVIDER WALLET_SEED)
 WALLET_PHRASE=$(fetch_or_ask $WALLET_PROVIDER WALLET_PHRASE)
-ENDPOINT=$(fetch_or_ask $NETWORK $WALLET_PROVIDER ENDPOINT)
+STATUS=$(fetch_or_ask $PNAME STATUS)
+#ENDPOINT=$(fetch_or_ask $NETWORK $WALLET_PROVIDER ENDPOINT)
 NODENAME=$(fetch_or_ask NODENAME)
 
 echo "$server_id"
@@ -29,12 +30,12 @@ readonly status_file="$status_folder$server_id"
 echo $WALLET
 echo $WALLET_SEED
 read
+echo "Press enter to continue"
 mkdir "${target_directory}" -p 
 cd "${target_directory}" ## exit 1
 
 dependencies=("build-essential" "git" "clang" "curl" "libssl-dev" "llvm" "libudev-dev" "git" "make" "protobuf-compiler" "unzip")
 check_dependencies "${dependencies[@]}"
-
 
 latest_release=$(curl -s https://api.github.com/repos/t3rn/t3rn/releases/latest | jq -r '.tag_name')
 echo $latest_release
@@ -42,8 +43,7 @@ file_url="https://github.com/t3rn/t3rn/releases/download/${latest_release}/t0rn-
 wget $file_url -O t0rn-collator.gz
 gunzip -c t0rn-collator.gz > circuit-collator
 mkdir ${target_directory}/specs -p
-wget   https://raw.githubusercontent.com/t3rn/t3rn/v1.2.0-rc.5/specs/rococo.raw.json -O ${target_directory}/specs/rococo.raw.json 
-
+wget  https://raw.githubusercontent.com/t3rn/t3rn/v1.2.0-rc.5/specs/rococo.raw.json -O ${target_directory}/specs/rococo.raw.json 
 wget  https://raw.githubusercontent.com/t3rn/t3rn/v1.2.0-rc.5/specs/t0rn.raw.json -O ${target_directory}/specs/t0rn.raw.json
 
 #t0rn_boot_node=/ip4/159.69.77.34/tcp/33333/p2p/12D3KooWEXwTktuERRvV3NCqmBuco7bYBaU7zRnwQCp4GEDYpS1v
@@ -57,8 +57,14 @@ After=network-online.target
 User=$USER
 Restart=always
 RestartSec=10
+ExecStart=${target_directory}/circuit-collator --collator --name $NODENAME --base-path ${target_directory}/data --chain ${target_directory}/specs/t0rn.raw.json --bootnodes "$t0rn_boot_node" --port 33333 --rpc-port 8833 --prometheus-port 7001 --telemetry-url 'wss://telemetry.polkadot.io/submit 1' --ws-port 9933 --execution Wasm --pruning=archive --rpc-methods=unsafe -- --chain ${target_directory}/specs/rococo.raw.json --bootnodes "$rococo_boot_node" --port 10001 --rpc-port 8001 --ws-port 9001 --execution Wasm
 LimitNOFILE=10000
 [Install]
 WantedBy=multi-user.target
 " > $HOME/t3rn.service
 sudo mv $HOME/t3rn.service /etc/systemd/system/
+
+
+systemctl enable t3rn
+systemctl start t3rn
+journalctl -u t3rn -f
