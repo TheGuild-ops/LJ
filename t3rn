@@ -22,9 +22,11 @@ WALLET=$(fetch_or_ask $WALLET_PROVIDER WALLET)
 WALLET_SEED=$(fetch_or_ask $WALLET_PROVIDER WALLET_SEED)
 WALLET_PHRASE=$(fetch_or_ask $WALLET_PROVIDER WALLET_PHRASE)
 STATUS=$(fetch_or_ask $PNAME STATUS)
+
 #ENDPOINT=$(fetch_or_ask $NETWORK $WALLET_PROVIDER ENDPOINT)
 NODENAME=$(fetch_or_ask NODENAME)
-
+echo $STATUS
+read
 echo "$server_id"
 readonly status_file="$status_folder$server_id"
 echo $WALLET
@@ -57,13 +59,14 @@ After=network-online.target
 User=$USER
 Restart=always
 RestartSec=10
-ExecStart=${target_directory}/circuit-collator --collator --name $NODENAME --base-path ${target_directory}/data --chain ${target_directory}/specs/t0rn.raw.json --bootnodes "$t0rn_boot_node" --port 33333 --rpc-port 8833 --prometheus-port 7001 --telemetry-url 'wss://telemetry.polkadot.io/submit 1' --ws-port 9933 --execution Wasm --pruning=archive --rpc-methods=unsafe -- --chain ${target_directory}/specs/rococo.raw.json --bootnodes "$rococo_boot_node" --port 10001 --rpc-port 8001 --ws-port 9001 --execution Wasm
+ExecStart=${target_directory}/circuit-collator --collator --name $NODENAME --base-path ${target_directory}/data --chain ${target_directory}/specs/t0rn.raw.json --bootnodes "$t0rn_boot_node" --port 33333 --rpc-port 8833 --prometheus-port 7001 --telemetry-url 'wss://telemetry.polkadot.io/submit 1' --execution Wasm --pruning=archive --rpc-methods=unsafe -- --chain ${target_directory}/specs/rococo.raw.json --bootnodes "$rococo_boot_node" --port 10001 --rpc-port 8001 --execution Wasm
 LimitNOFILE=10000
 [Install]
 WantedBy=multi-user.target
 " > $HOME/t3rn.service
 sudo mv $HOME/t3rn.service /etc/systemd/system/
 
+chmod +x /root/node/t3rn/circuit-collator
 
 systemctl enable t3rn
 systemctl start t3rn
