@@ -1,5 +1,4 @@
 #!/bin/bash
-set -x
 
 fetch_or_ask() {
     local parameters=("$@")
@@ -45,7 +44,7 @@ fetch_or_ask() {
         local filename=""
 
         for param in "${parameters[@]}"; do
-            directory+="/$param"
+            directory+="/$param_"
             filename+="$param"
         done
 
