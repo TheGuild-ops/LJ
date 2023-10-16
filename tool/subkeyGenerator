@@ -1,6 +1,7 @@
 #!/bin/bash
 
 # Проверяем, установлен ли subkey
+source /root/.profile
 if ! command -v subkey &> /dev/null; then
     echo "subkey is not installed. Installing..."
     cargo +nightly install --force subkey
