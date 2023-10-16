@@ -1,0 +1,80 @@
+#!/bin/bash
+
+fetch_or_ask() {
+    local parameters=("$@")
+    local env_file="/root/.env"
+    local server_id=""
+    local value=""
+    local existing_value=""
+
+    # Проверка наличия файла .env и создание его при отсутствии
+    if [[ ! -f $env_file ]]; then
+        touch "$env_file"
+    fi
+
+    # Считывание server_id из файла безопасным способом
+    server_id=$(grep "^server_id=" "$env_file" | awk -F= '{print $2}' | xargs)
+
+    # Если server_id отсутствует, запрашиваем его у пользователя
+    while [[ -z $server_id ]]; do
+        read -p "Enter server_id: " server_id
+    done
+
+    # Сохраняем server_id в файл .env, если его там не было
+    if ! grep -q "server_id" "$env_file"; then
+        echo "server_id=$server_id" >> "$env_file"
+    fi
+
+    # Если функция вызвана без параметров, возвращаем server_id
+    if [ "$#" -eq 0 ]; then
+        echo "$server_id"
+        return
+    fi
+
+    # Если указана только одна переменная, сохраняем значение в файл .env
+    if [ "$#" -eq 1 ]; then
+        local param="$1"
+        read -p "Enter value for $param (or press Enter to skip): " value
+        if [[ "$value" != "" ]]; then
+            echo "$param=$value" >> "$env_file"
+        fi
+    else
+        # Формируем путь к каталогу и имя файла
+        local directory="./data"
+        local filename=""
+
+        for param in "${parameters[@]}"; do
+            directory+="/$param"
+            filename+="$param""_"
+        done
+
+        # Защита от пустого filename
+        while [[ -z $filename ]]; do
+            echo "Filename is empty."
+            exit 1
+        done
+
+        mkdir -p "$directory/$filename"  # создаем директорию, если она не существует
+
+        # Проверяем, есть ли уже значение в файле
+        if [[ -f "$directory/$filename/$server_id" ]]; then
+            existing_value=$(cat "$directory/$filename/$server_id")
+        fi
+
+        if [[ -n $existing_value ]]; then
+            value=$existing_value
+        else
+            read -p "Enter value for $filename (or press Enter to skip): " value
+            if [[ "$value" != "" ]]; then
+                echo "$value" >> "$directory/$filename/$server_id"
+            fi
+        fi
+            export "$filename=$value"
+
+    fi
+
+    # Экспортируем переменную в текущем сеансе
+
+    # Возвращаем значение
+    echo "$value"
+}

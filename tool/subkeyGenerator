@@ -1,0 +1,28 @@
+#!/bin/bash
+
+# Проверяем, установлен ли subkey
+source /root/.profile
+if ! command -v subkey &> /dev/null; then
+    echo "subkey is not installed. Installing..."
+    cargo +nightly install --force subkey
+    cd 
+    git clone https://github.com/paritytech/substrate.git
+    cd substrate
+    cargo +nightly build --package subkey --release
+    sudo mv target/release/subkey /usr/local/bin/ || exit
+else
+    echo "subkey is already installed."
+fi
+
+# Проверяем, существует ли файл с ключем и он не пустой
+if [ ! -s "$HOME/key.txt" ]; then
+    subkey generate >> $HOME/key.txt
+    echo "A new key has been generated and saved to $HOME/key.txt"
+else
+    echo "A key already exists in $HOME/key.txt and will not be overwritten."
+    cat $HOME/key.txt
+fi
+
+# Выводим сгенерированный ключ
+echo "-----------------------------------------------------------------------------------------------"
+cat $HOME/key.txt
