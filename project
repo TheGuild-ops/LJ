@@ -7,6 +7,8 @@ project_output() {
         "https://raw.githubusercontent.com/TheGuild-ops/LJ/main/subsquid"
         "https://raw.githubusercontent.com/TheGuild-ops/LJ/main/taiko"
         "https://raw.githubusercontent.com/TheGuild-ops/LJ/main/t3rn"
+        "https://raw.githubusercontent.com/TheGuild-ops/LJ/main/elixir"
+        
         # Добавьте больше проектов по мере необходимости
     )
 
