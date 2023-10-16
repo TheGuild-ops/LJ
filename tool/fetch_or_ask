@@ -44,8 +44,8 @@ fetch_or_ask() {
         local filename=""
 
         for param in "${parameters[@]}"; do
-            directory+="/$param_"
-            filename+="$param"
+            directory+="/$param"
+            filename+="$param""_"
         done
 
         # Защита от пустого filename
@@ -54,7 +54,7 @@ fetch_or_ask() {
             exit 1
         done
 
-        mkdir -p "$directory"  # создаем директорию, если она не существует
+        mkdir -p "$directory/$filename"  # создаем директорию, если она не существует
 
         # Проверяем, есть ли уже значение в файле
         if [[ -f "$directory/$filename/$server_id" ]]; then

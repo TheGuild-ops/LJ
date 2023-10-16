@@ -14,7 +14,14 @@ else
     echo "subkey is already installed."
 fi
 
-subkey generate >> $HOME/key.txt
+# Проверяем, существует ли файл с ключем и он не пустой
+if [ ! -s "$HOME/key.txt" ]; then
+    subkey generate >> $HOME/key.txt
+    echo "A new key has been generated and saved to $HOME/key.txt"
+else
+    echo "A key already exists in $HOME/key.txt and will not be overwritten."
+    cat $HOME/key.txt
+fi
 
 # Выводим сгенерированный ключ
 echo "-----------------------------------------------------------------------------------------------"
