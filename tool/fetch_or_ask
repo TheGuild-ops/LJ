@@ -69,10 +69,11 @@ fetch_or_ask() {
                 echo "$value" >> "$directory/$filename/$server_id"
             fi
         fi
+            export "$filename=$value"
+
     fi
 
     # Экспортируем переменную в текущем сеансе
-    export "$filename=$value"
 
     # Возвращаем значение
     echo "$value"
