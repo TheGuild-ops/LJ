@@ -6,7 +6,6 @@ fetch_or_ask() {
     local server_id=""
     local value=""
     local existing_value=""
-    local prompt=""
 
     # Проверка наличия файла .env и создание его при отсутствии
     if [[ ! -f $env_file ]]; then
@@ -15,12 +14,6 @@ fetch_or_ask() {
 
     # Считывание server_id из файла безопасным способом
     server_id=$(grep "^server_id=" "$env_file" | awk -F= '{print $2}' | xargs)
-
-    # Проверка server_id на длину и специальные символы
-    if [[ ${#server_id} -gt 50 || "$server_id" =~ [^a-zA-Z0-9_] ]]; then
-        echo "Invalid server_id."
-        exit 1
-    fi
 
     # Если server_id отсутствует, запрашиваем его у пользователя
     while [[ -z $server_id ]]; do
@@ -38,44 +31,44 @@ fetch_or_ask() {
         return
     fi
 
-    # Формируем путь к каталогу и имя файла
-    local directory="./data"
-    local filename=""
-
-    for param in "${parameters[@]}"; do
-        directory+="/$param"
-        filename+="$param"
-    done
-
-    # Защита от пустого filename
-    if [[ -z $filename ]]; then
-        echo "Filename is empty."
-        exit 1
-    fi
-
-    mkdir -p "$directory"  # создаем директорию, если она не существует
-
-     # Проверяем, есть ли уже значение в файле
-    if [[ -f "$directory/$filename" ]]; then
-        existing_value=$(grep "$server_id" "$directory/$filename" | cut -d' ' -f2)
-    fi
-
-    if [[ -n $existing_value ]]; then
-        value=$existing_value
+    # Если указана только одна переменная, сохраняем значение в файл .env
+    if [ "$#" -eq 1 ]; then
+        local param="$1"
+        read -p "Enter value for $param (or press Enter to skip): " value
+        if [[ "$value" != "" ]]; then
+            echo "$param=$value" >> "$env_file"
+        fi
     else
-while : ; do
-    read -p "Enter value for $filename (or press Enter to skip): " value
-    if [[ "$value" == "" ]]; then
-        value=""
-        break
-    else
-        break
-    fi
-done
+        # Формируем путь к каталогу и имя файла
+        local directory="./data"
+        local filename=""
 
+        for param in "${parameters[@]}"; do
+            directory+="/$param"
+            filename+="$param"
+        done
 
-        # Обновляем значение в файле
-        echo "$server_id $value" >> "$directory/$filename"
+        # Защита от пустого filename
+        while [[ -z $filename ]]; do
+            echo "Filename is empty."
+            exit 1
+        done
+
+        mkdir -p "$directory"  # создаем директорию, если она не существует
+
+        # Проверяем, есть ли уже значение в файле
+        if [[ -f "$directory/$filename/$server_id" ]]; then
+            existing_value=$(cat "$directory/$filename/$server_id")
+        fi
+
+        if [[ -n $existing_value ]]; then
+            value=$existing_value
+        else
+            read -p "Enter value for $filename (or press Enter to skip): " value
+            if [[ "$value" != "" ]]; then
+                echo "$value" >> "$directory/$filename/$server_id"
+            fi
+        fi
     fi
 
     # Экспортируем переменную в текущем сеансе
