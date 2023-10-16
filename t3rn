@@ -68,7 +68,7 @@ WantedBy=multi-user.target
 sudo mv $HOME/t3rn.service /etc/systemd/system/
 
 chmod +x /root/node/t3rn/circuit-collator
-
+systemctl daemon-reload
 systemctl enable t3rn
 systemctl start t3rn
 journalctl -u t3rn -f
