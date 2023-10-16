@@ -1,4 +1,5 @@
 #!/bin/bash
+set -x
 
 fetch_or_ask() {
     local parameters=("$@")
