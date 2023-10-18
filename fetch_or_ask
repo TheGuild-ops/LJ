@@ -55,31 +55,28 @@ fetch_or_ask() {
 
     mkdir -p "$directory"  # создаем директорию, если она не существует
 
-    # Проверяем, есть ли уже значение в файле безопасным способом
-    if [[ -f "$directory/$filename" ]]; then
-        existing_value=$(grep "^$server_id" "$directory/$filename" | awk '{print $2}' | xargs)
+     # Проверяем, есть ли уже значение в файле
+if [[ -n $existing_value ]]; then
+    value=$existing_value
+else
+    while : ; do  # бесконечный цикл
+        read -p "Enter value for $filename (or press Enter to skip): " value
+        if [[ -z $value ]]; then
+            echo "Input is empty. Please provide a value."
+        else
+            break  # выходит из цикла, если значение не пусто
+        fi
+    done
+
+    # Если значение пусто, пропускаем выполнение сценария
+    if [[ -z $value ]]; then
+        echo "Skipping execution."
+        return 0
     fi
 
-    if [[ -n $existing_value ]]; then
-        value=$existing_value
-    else
-        while : ; do  # бесконечный цикл
-            read -p "Enter value for $filename (or press Enter to skip): " value
-            # Проверка на длину и специальные символы в value
-            if [[ ${#value} -gt 100 || "$value" =~ [^a-zA-Z0-9_] ]]; then
-                echo "Invalid input."
-                continue  # возвращает в начало цикла
-            elif [[ -z $value ]]; then
-                echo "Skipping the input for $filename."
-                return  # прерывает выполнение функции
-            else
-                break  # выходит из цикла, если значение не пусто
-            fi
-        done
-
-        # Обновляем значение в файле
-        echo "$server_id $value" >> "$directory/$filename"
-    fi
+    # Обновляем значение в файле
+    echo "$server_id $value" >> "$directory/$filename"
+fi
 
     # Экспортируем переменную в текущем сеансе
     export "$filename=$value"

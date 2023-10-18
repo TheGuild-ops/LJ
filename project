@@ -1,0 +1,36 @@
+#!/bin/bash
+
+# Функция для запроса вывода проекта
+project_output() {
+    # Массив ссылок проектов
+    projects=(
+        "https://raw.githubusercontent.com/TheGuild-ops/LJ/main/subsquid"
+        "https://raw.githubusercontent.com/TheGuild-ops/LJ/main/taiko"
+        "https://raw.githubusercontent.com/TheGuild-ops/LJ/main/t3rn"
+        "https://raw.githubusercontent.com/TheGuild-ops/LJ/main/elixir"
+        
+        # Добавьте больше проектов по мере необходимости
+    )
+
+    # Вывести список проектов и их номера
+    echo "Select a project:"
+    for i in "${!projects[@]}"; do
+        # Получить последнее слово из ссылки (название проекта)
+        project_name=${projects[$i]##*/}
+        echo "$((i+1)). $project_name"
+    done
+
+    # Запросить номер проекта
+    read -p "Enter the project number: " project_number
+
+    # Выполнить выбранный проект
+    if (( project_number >= 1 && project_number <= ${#projects[@]} )); then
+        bash <(curl -sS "${projects[$((project_number-1))]}") -y
+    else
+        echo "Invalid project number. Exiting."
+        exit 1
+    fi
+}
+
+# Вызвать функцию
+project_output
