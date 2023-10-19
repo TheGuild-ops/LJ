@@ -1,0 +1,59 @@
+#!/bin/bash
+
+# Обновление системы
+sudo apt-get update
+
+# Функция проверки и установки Docker
+install_docker() {
+  if [ -x "$(command -v docker)" ]; then
+    echo "Docker уже установлен"
+  else
+    # Установка необходимых пакетов
+    sudo apt-get install -y \
+        apt-transport-https \
+        ca-certificates \
+        curl \
+        software-properties-common
+
+    # Добавление ключа GPG Docker
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+
+    # Добавление репозитория Docker
+    sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+
+    # Обновление индекса пакетов
+    sudo apt-get update
+
+    # Установка Docker
+    sudo apt-get install -y docker-ce docker-ce-cli containerd.io
+
+    # Добавление пользователя в группу Docker
+    sudo usermod -aG docker $USER
+  fi
+}
+
+# Функция проверки и установки Docker Compose
+install_docker_compose() {
+  if [ -x "$(command -v docker-compose)" ]; then
+    echo "Docker Compose уже установлен"
+  else
+    # Установка Docker Compose
+    sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+
+    # Предоставление прав на выполнение
+    sudo chmod +x /usr/local/bin/docker-compose
+  fi
+}
+
+# Установка Docker
+install_docker
+
+# Установка Docker Compose
+install_docker_compose
+
+# Перезагрузка системы
+sudo systemctl restart docker
+
+# Вывод версии Docker и Docker Compose для проверки
+docker --version
+docker-compose --version
