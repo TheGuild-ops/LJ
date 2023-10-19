@@ -35,7 +35,7 @@ read
 mkdir "${target_directory}" -p 
 cd "${target_directory}" ## exit 1
 
-dependencies=("build-essential" "git" "clang" "curl" "libssl-dev" "llvm" "libudev-dev" "git" "make" "protobuf-compiler" "unzip")
+dependencies=("build-essential" "git" "clang" "curl" "libssl-dev" "llvm" "libudev-dev" "git" "make" "protobuf-compiler" "unzip" "docker-ce" "docker-ce-cli" "containerd.io" "docker-buildx-plugin" "docker-compose-plugin" "npm" "ncdu")
 check_dependencies "${dependencies[@]}"
 
 latest_release=$(curl -s https://api.github.com/repos/t3rn/t3rn/releases/latest | jq -r '.tag_name')
