@@ -9,8 +9,6 @@ readonly PNAME=elixir
 readonly WALLET_PROVIDER=metamask
 readonly NETWORK=sepolia
 target_directory="/root/node/${PNAME}"
-mkdir -p $target_directory
-cd $target_directory
 
 wget https://files.elixir.finance/Dockerfile -O Dockerfile
 bash <(curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/main/tool/ethGen)
@@ -19,6 +17,9 @@ WALLET=$(fetch_or_ask $WALLET_PROVIDER $PNAME WALLET)
 WALLET_SEED=$(fetch_or_ask $WALLET_PROVIDER $PNAME WALLET_SEED)
 STATUS=$(fetch_or_ask $PNAME STATUS)
 NODENAME=$(fetch_or_ask NODENAME)
+
+mkdir -p $target_directory
+cd $target_directory
 
 sed -i "s/ENV ADDRESS=0x.*/ENV ADDRESS=$WALLET/" "Dockerfile"
 sed -i "s/ENV PRIVATE_KEY=0x.*/ENV PRIVATE_KEY=0x$WALLET_SEED/" "Dockerfile"
