@@ -31,12 +31,12 @@ mkdir "/root/node/" -p
 cd "/root/node" ## exit 1
 
 if [ -d "$target_directory/.git" ]; then
+    cd "$target_directory"
     git pull
 else
     git clone "$git_repo_url" "$target_directory"
+    cd "$target_directory"
 fi
-
-cd simple-taiko-node
 
 # Вывод текущего состояния Docker
 echo "Current Docker state:"
