@@ -12,6 +12,7 @@ git_repo_url="https://github.com/taikoxyz/simple-taiko-node.git"
 
 dependencies=("build-essential" "git" "clang" "curl" "libssl-dev" "llvm" "libudev-dev" "git" "make" "protobuf-compiler" "unzip" "docker-ce" "docker-ce-cli" "containerd.io" "docker-buildx-plugin" "docker-compose-plugin" "npm" "ncdu")
 check_dependencies "${dependencies[@]}"
+apt update && apt upgrade -y
 
 readonly status_folder="$(pwd)/data/$PNAME/status/"
 mkdir -p $status_folder
