@@ -10,9 +10,10 @@ readonly NETWORK=sepolia
 target_directory="/root/node/simple-taiko-node"
 git_repo_url="https://github.com/taikoxyz/simple-taiko-node.git"
 
-dependencies=("build-essential" "git" "clang" "curl" "libssl-dev" "llvm" "libudev-dev" "git" "make" "protobuf-compiler" "unzip"  "npm" "ncdu")
+dependencies=("build-essential" "git" "clang" "curl" "libssl-dev" "llvm" "libudev-dev"  "make" "protobuf-compiler" "unzip"  "npm" "ncdu")
 check_dependencies "${dependencies[@]}"
-apt update && apt upgrade -y
+
+curl -sS https://raw.githubusercontent.com/TheGuild-ops/LJ/main/tool/docker | bash
 
 readonly status_folder="$(pwd)/data/$PNAME/status/"
 mkdir -p $status_folder
