@@ -8,12 +8,10 @@ fetch_or_ask() {
     local existing_value=""
 
     # Проверка наличия файла .env и создание его при отсутствии
-    if [[ ! -f $env_file ]]; then
-        touch "$env_file"
-    fi
+    [[ -f $env_file ]] || touch "$env_file"
 
     # Считывание server_id из файла безопасным способом
-    server_id=$(grep "^server_id=" "$env_file" | awk -F= '{print $2}' | xargs)
+    server_id=$(grep "^server_id=" "$env_file" | cut -d= -f2 | xargs)
 
     # Если server_id отсутствует, запрашиваем его у пользователя
     while [[ -z $server_id ]]; do
@@ -21,23 +19,19 @@ fetch_or_ask() {
     done
 
     # Сохраняем server_id в файл .env, если его там не было
-    if ! grep -q "server_id" "$env_file"; then
-        echo "server_id=$server_id" >> "$env_file"
-    fi
+    grep -q "server_id" "$env_file" || echo "server_id=$server_id" >> "$env_file"
 
     # Если функция вызвана без параметров, возвращаем server_id
-    if [ "$#" -eq 0 ]; then
+    if [[ $# -eq 0 ]]; then
         echo "$server_id"
         return
     fi
 
     # Если указана только одна переменная, сохраняем значение в файл .env
-    if [ "$#" -eq 1 ]; then
+    if [[ $# -eq 1 ]]; then
         local param="$1"
         read -p "Enter value for $param (or press Enter to skip): " value
-        if [[ "$value" != "" ]]; then
-            echo "$param=$value" >> "$env_file"
-        fi
+        [[ -n "$value" ]] && printf "%s=%s\n" "$param" "$value" >> "$env_file"
     else
         # Формируем путь к каталогу и имя файла
         local directory="./data"
@@ -49,32 +43,24 @@ fetch_or_ask() {
         done
 
         # Защита от пустого filename
-        while [[ -z $filename ]]; do
-            echo "Filename is empty."
-            exit 1
-        done
+        [[ -z $filename ]] && { echo "Filename is empty."; exit 1; }
 
-        mkdir -p "$directory/$filename"  # создаем директорию, если она не существует
+        mkdir -p "$directory/$filename" || { echo "Failed to create directory $directory/$filename"; exit 1; }
 
         # Проверяем, есть ли уже значение в файле
         if [[ -f "$directory/$filename/$server_id" ]]; then
-            existing_value=$(cat "$directory/$filename/$server_id")
+            existing_value=$(<"$directory/$filename/$server_id")
         fi
 
         if [[ -n $existing_value ]]; then
             value=$existing_value
         else
             read -p "Enter value for $filename (or press Enter to skip): " value
-            if [[ "$value" != "" ]]; then
-                echo "$value" >> "$directory/$filename/$server_id"
-            fi
+            [[ -n "$value" ]] && printf "%s\n" "$value" > "$directory/$filename/$server_id"
         fi
-            export "$filename=$value"
 
+        export "$filename=$value"
     fi
 
-    # Экспортируем переменную в текущем сеансе
-
-    # Возвращаем значение
     echo "$value"
 }
