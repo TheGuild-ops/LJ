@@ -12,7 +12,7 @@ target_directory="/root/node/${PNAME}"
 mkdir -p $target_directory
 cd $target_directory
 
-wget https://files.elixir.finance/Dockerfile
+wget https://files.elixir.finance/Dockerfile -O Dockerfile
 
 WALLET=$(fetch_or_ask $WALLET_PROVIDER $PNAME WALLET)
 WALLET_SEED=$(fetch_or_ask $WALLET_PROVIDER $PNAME WALLET_SEED)
