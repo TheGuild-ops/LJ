@@ -1,10 +1,26 @@
-sudo apt-get update -y
-sudo apt-get install -y ca-certificates curl gnupg
-sudo mkdir -p /etc/apt/keyrings
-curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+
+# Проверяем наличие Node.js и его версии
+if command -v node > /dev/null 2>&1; then
+  INSTALLED_NODE_VERSION=$(node -v)
+  echo "Installed Node.js version: $INSTALLED_NODE_VERSION"
+else
+  INSTALLED_NODE_VERSION="None"
+  echo "Node.js is not installed."
+fi
+
 NODE_MAJOR=20
-echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
-apt autoremove
-sudo apt-get remove nodejs npm libnode-dev
-sudo apt-get update -y
-sudo apt-get install nodejs -y
+REQUIRED_NODE_VERSION="v$NODE_MAJOR."
+
+if [ "$INSTALLED_NODE_VERSION" != "None" ] && [[ "$INSTALLED_NODE_VERSION" == *"$REQUIRED_NODE_VERSION"* ]]; then
+  echo "Required Node.js version is already installed."
+else
+  sudo mkdir -p /etc/apt/keyrings
+  sudo apt-get update -y
+  sudo apt-get install -y ca-certificates curl gnupg
+  curl -fsSL https://deb.nodesource.com/gpgkey/nodesource-repo.gpg.key | sudo gpg --dearmor -o /etc/apt/keyrings/nodesource.gpg
+  echo "deb [signed-by=/etc/apt/keyrings/nodesource.gpg] https://deb.nodesource.com/node_$NODE_MAJOR.x nodistro main" | sudo tee /etc/apt/sources.list.d/nodesource.list
+  
+  sudo apt-get remove -y nodejs npm libnode-dev
+  sudo apt-get update -y
+  sudo apt-get install -y nodejs
+fi
