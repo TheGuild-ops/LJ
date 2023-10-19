@@ -20,7 +20,7 @@ WALLET_SEED=$(fetch_or_ask $WALLET_PROVIDER $PNAME WALLET_SEED)
 STATUS=$(fetch_or_ask $PNAME STATUS)
 NODENAME=$(fetch_or_ask NODENAME)
 
-sed -i "s/ENV ADDRESS=0x.*/ENV ADDRESS=0x$WALLET/" "Dockerfile"
+sed -i "s/ENV ADDRESS=0x.*/ENV ADDRESS=$WALLET/" "Dockerfile"
 sed -i "s/ENV PRIVATE_KEY=0x.*/ENV PRIVATE_KEY=0x$WALLET_SEED/" "Dockerfile"
 sed -i "s/ENV VALIDATOR_NAME=.*/ENV VALIDATOR_NAME=$NODENAME/" "Dockerfile"
 

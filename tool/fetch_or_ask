@@ -39,7 +39,7 @@ fetch_or_ask() {
         fi
     else
         # Формируем путь к каталогу и имя файла
-        local directory="./data"
+        local directory="$(pwd)./data"
         local filename=""
 
         for param in "${parameters[@]}"; do
