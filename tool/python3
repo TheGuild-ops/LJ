@@ -1,0 +1,23 @@
+#!/bin/bash
+
+# Проверяем наличие Python
+if ! command -v python3 &>/dev/null; then
+    echo "Python не найден. Установка Python..."
+    sudo apt update
+    sudo apt install -y python3
+else
+    echo "Python уже установлен."
+fi
+
+# Проверяем наличие pip
+if ! command -v pip3 &>/dev/null; then
+    echo "pip не найден. Установка pip..."
+    sudo apt update
+    sudo apt install -y python3-pip
+else
+    echo "pip уже установлен."
+fi
+
+# Выводим версии Python и pip
+python3 --version
+pip3 --version

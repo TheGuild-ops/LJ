@@ -1,0 +1,53 @@
+#!/bin/bash
+
+# Проверка и установка Python3
+if ! command -v python3 &> /dev/null
+then
+    echo "Python3 could not be found"
+    sudo apt-get update
+    sudo apt-get install -y python3
+fi
+
+# Проверка и установка pip3
+if ! command -v pip3 &> /dev/null
+then
+    echo "pip3 could not be found"
+    sudo apt-get update
+    sudo apt-get install -y python3-pip
+fi
+
+# Проверка и установка pycryptodome
+python3 -c "import Crypto" &> /dev/null
+if [ $? -eq 1 ]; then
+    echo "pycryptodome could not be found"
+    pip3 install pycryptodome
+fi
+
+# Генерация приватного ключа
+openssl ecparam -name secp256k1 -genkey -out private_key.pem
+
+# Получение приватного ключа в формате hex
+private_key_hex=$(openssl ec -in private_key.pem -outform DER | tail -c +8 | xxd -p -c 32)
+
+# Получение публичного ключа
+openssl ec -in private_key.pem -pubout -out public_key.pem
+
+# Получение публичного ключа в формате hex
+public_key_hex=$(openssl ec -pubin -in public_key.pem -outform DER | tail -c 64 | xxd -p -c 256)
+
+# Запуск Python-скрипта для получения Ethereum-адреса
+ethereum_address=$(python3 -c "
+import sys
+from Crypto.Hash import keccak
+
+public_key_hex = sys.argv[1]
+public_key_bytes = bytes.fromhex(public_key_hex)
+keccak_hash = keccak.new(digest_bits=256)
+keccak_hash.update(public_key_bytes)
+address = keccak_hash.hexdigest()[-40:]
+print('0x' + address)
+" $public_key_hex)
+
+# Вывод результатов
+echo "Private Key (Hexadecimal): $private_key_hex"
+echo "Ethereum Address: $ethereum_address"
