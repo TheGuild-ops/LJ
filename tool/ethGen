@@ -1,6 +1,8 @@
 #!/bin/bash
 
 # Проверка и установка Python3
+mkdir /root/data/${server_id} -p
+cd /root/data/${server_id}
 if ! command -v python3 &> /dev/null
 then
     echo "Python3 could not be found"
