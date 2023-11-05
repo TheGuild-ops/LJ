@@ -1,0 +1,25 @@
+#!/bin/bash
+
+# Функция для клонирования репозитория и перехода к последнему коммиту
+clone_and_checkout_latest() {
+  local repo_url="$1"
+  local repo_dir="$(basename "$repo_url" .git)"
+
+  # Клонируем репозиторий
+  git clone "$repo_url"
+  if [ $? -ne 0 ]; then
+    echo "Err"
+    return 1
+  fi
+
+  # Переходим в каталог репозитория
+  cd "$repo_dir" || return 1
+
+  # Переключаемся на последний коммит в основной ветке
+  local latest_commit_hash=$(git rev-parse HEAD)
+  git checkout "$latest_commit_hash" || return 1
+
+  echo "$latest_commit_hash"
+}
+
+# Вызов функции с URL репозитория
