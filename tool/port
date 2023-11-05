@@ -1,0 +1,18 @@
+#!/bin/bash
+START=10000
+END=13000
+
+port() {
+readarray -t PORTS < <(shuf -i $START-$END -n $((END-START+1)))
+
+for port in "${PORTS[@]}"; do
+  if ! netstat -tuln | grep -qE "(:$port)\s"; then
+    echo "Свободный порт найден: $port"
+    exit 0
+  fi
+done
+
+echo "Не найдено свободных портов в диапазоне $START-$END."
+exit 1
+
+}
